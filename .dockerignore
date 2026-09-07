@@ -1,0 +1,17 @@
+.git
+.github
+.env
+.venv
+.coverage
+.pytest_cache
+.ruff_cache
+__pycache__
+*.py[cod]
+*.egg-info
+dist
+docs
+outputs
+tests
+requirements-dev.lock
+storage/*
+!storage/.gitkeep

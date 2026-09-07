@@ -1,0 +1,77 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: linkedin_automation
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d linkedin_automation"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/linkedin_automation
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.lock
+            requirements-dev.lock
+      - run: |
+          pip install -r requirements-dev.lock
+          pip install --no-deps -e .
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: |
+          pip-audit -r requirements.lock
+          pip-audit -r requirements-dev.lock
+      - run: |
+          alembic upgrade head --sql > /tmp/migration.sql
+          test "$(grep -c 'CREATE TYPE post_status' /tmp/migration.sql)" -eq 1
+      - run: |
+          alembic upgrade head
+          python scripts/seed.py
+          alembic downgrade base
+          alembic upgrade head
+      - run: pytest -q
+      - run: docker build -t linkedin-ai-automation:ci .
+      - name: Container smoke test
+        run: |
+          docker run -d --name linkedin-ai-automation-ci \
+            --add-host=host.docker.internal:host-gateway \
+            -e DATABASE_URL=postgresql+asyncpg://postgres:postgres@host.docker.internal:5432/linkedin_automation \
+            -e AUTO_GENERATION_ENABLED=false \
+            -p 8000:8000 linkedin-ai-automation:ci
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:8000/health; then
+              docker rm -f linkedin-ai-automation-ci
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs linkedin-ai-automation-ci
+          docker rm -f linkedin-ai-automation-ci
+          exit 1
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: linkedin-ai-automation:ci
+          severity: CRITICAL,HIGH
+          exit-code: "1"
