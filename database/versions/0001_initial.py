@@ -275,16 +275,28 @@ def upgrade():
         BEGIN
           RAISE EXCEPTION 'immutable records cannot be changed or deleted';
         END;
-        $$ LANGUAGE plpgsql;
+        $$ LANGUAGE plpgsql
+        """
+    )
+    op.execute(
+        """
         CREATE TRIGGER audit_events_immutable
           BEFORE UPDATE OR DELETE ON audit_events
-          FOR EACH ROW EXECUTE FUNCTION prevent_immutable_row_mutation();
+          FOR EACH ROW EXECUTE FUNCTION prevent_immutable_row_mutation()
+        """
+    )
+    op.execute(
+        """
         CREATE TRIGGER approvals_immutable
           BEFORE UPDATE OR DELETE ON approvals
-          FOR EACH ROW EXECUTE FUNCTION prevent_immutable_row_mutation();
+          FOR EACH ROW EXECUTE FUNCTION prevent_immutable_row_mutation()
+        """
+    )
+    op.execute(
+        """
         CREATE TRIGGER revisions_immutable
           BEFORE UPDATE OR DELETE ON revisions
-          FOR EACH ROW EXECUTE FUNCTION prevent_immutable_row_mutation();
+          FOR EACH ROW EXECUTE FUNCTION prevent_immutable_row_mutation()
         """
     )
 

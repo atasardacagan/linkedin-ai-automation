@@ -2,6 +2,11 @@
 
 All notable changes are documented here. The project follows semantic versioning.
 
+## 0.1.1 — 2026-09-07
+
+- Split the immutable-audit function and trigger DDL into individual migration statements so the
+  initial migration runs correctly through SQLAlchemy's `asyncpg` driver on PostgreSQL 16.
+
 ## 0.1.0 — 2026-09-06
 
 - Added OpenAI-backed source research, strict structured generation, independent quality review,
