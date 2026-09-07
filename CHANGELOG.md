@@ -10,6 +10,8 @@ All notable changes are documented here. The project follows semantic versioning
   pool cannot reuse `asyncpg` connections across incompatible loops.
 - Pin the Python 3.12 runtime image to an explicit Debian Trixie tag and immutable multi-platform
   digest; report every HIGH/CRITICAL image finding while blocking findings with vendor fixes.
+- Keep Dependabot digest and patch refreshes enabled while preventing automatic upgrades away from
+  the Python 3.12 runtime line tested by CI.
 
 ## 0.1.0 — 2026-09-06
 
