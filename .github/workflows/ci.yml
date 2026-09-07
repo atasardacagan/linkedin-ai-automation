@@ -69,9 +69,20 @@ jobs:
           docker logs linkedin-ai-automation-ci
           docker rm -f linkedin-ai-automation-ci
           exit 1
-      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      - name: Report all high and critical image vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: linkedin-ai-automation:ci
+          severity: CRITICAL,HIGH
+          exit-code: "0"
+          ignore-unfixed: false
+      - name: Block high and critical vulnerabilities with vendor fixes
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: image
           image-ref: linkedin-ai-automation:ci
           severity: CRITICAL,HIGH
           exit-code: "1"
+          ignore-unfixed: true
+          scanners: vuln

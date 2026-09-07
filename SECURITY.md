@@ -29,6 +29,18 @@ If a credential may have been exposed, do not wait for a code change:
 The application never needs a LinkedIn password. Any request for one is outside this project's
 design and should be treated as suspicious.
 
+## Container vulnerability policy
+
+The runtime base uses an explicit Debian release tag and an immutable multi-platform digest. CI runs
+two pinned Trivy image scans: one reports every HIGH or CRITICAL finding, including findings for
+which the distribution has not published a fix; the blocking scan fails on HIGH or CRITICAL
+findings that have a vendor-provided fixed version.
+
+An unfixed finding is not considered harmless or resolved. It remains a tracked base-image risk.
+When a vendor fix becomes available, the blocking scan requires the runtime digest to be updated
+before CI can pass. Reassess the base-image choice and outstanding report whenever a release is
+prepared.
+
 ## Security invariants
 
 A change is security-sensitive when it touches Telegram administrator checks, webhook validation,
