@@ -8,6 +8,8 @@ All notable changes are documented here. The project follows semantic versioning
   initial migration runs correctly through SQLAlchemy's `asyncpg` driver on PostgreSQL 16.
 - Run async tests and fixtures on one session event loop so the shared integration-test connection
   pool cannot reuse `asyncpg` connections across incompatible loops.
+- Pin the Python 3.12 runtime image to the supported Debian Bookworm variant and an immutable
+  multi-platform manifest digest for reproducible builds and a smaller OS vulnerability surface.
 
 ## 0.1.0 — 2026-09-06
 
