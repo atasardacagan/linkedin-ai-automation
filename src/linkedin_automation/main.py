@@ -7,6 +7,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from . import __version__
 from .config import settings
 from .db import get_session
 from .logging import configure_logging
@@ -52,7 +53,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="LinkedIn AI Automation",
-    version="0.1.0",
+    version=__version__,
     lifespan=lifespan,
     docs_url=None if settings.app_env == "production" else "/docs",
 )
